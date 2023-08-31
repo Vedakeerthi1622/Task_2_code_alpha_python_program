@@ -1,0 +1,62 @@
+import tkinter as tk
+from tkinter import messagebox
+import requests
+
+api_key = "YOUR_API_KEY"
+base_url = "https://openexchangerates.org/api/latest.json"
+
+def get_exchange_rates():
+    params = {"app_id": api_key}
+    response = requests.get(base_url, params=params)
+    data = response.json()
+    return data["rates"]
+
+def convert_currency(amount, from_currency, to_currency):
+    rates = get_exchange_rates()
+    if from_currency == to_currency:
+        return amount
+    else:
+        return amount * (rates[to_currency] / rates[from_currency])
+
+class CurrencyConverterApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Currency Converter")
+
+        self.from_currency_var = tk.StringVar()
+        self.to_currency_var = tk.StringVar()
+        self.amount_var = tk.DoubleVar()
+        self.converted_amount_var = tk.DoubleVar()
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        tk.Label(self.root, text="From Currency:").pack()
+        tk.Entry(self.root, textvariable=self.from_currency_var).pack()
+
+        tk.Label(self.root, text="To Currency:").pack()
+        tk.Entry(self.root, textvariable=self.to_currency_var).pack()
+
+        tk.Label(self.root, text="Amount:").pack()
+        tk.Entry(self.root, textvariable=self.amount_var).pack()
+
+        tk.Button(self.root, text="Convert", command=self.convert).pack()
+
+        tk.Label(self.root, text="Converted Amount:").pack()
+        tk.Label(self.root, textvariable=self.converted_amount_var).pack()
+
+    def convert(self):
+        from_currency = self.from_currency_var.get()
+        to_currency = self.to_currency_var.get()
+        amount = self.amount_var.get()
+
+        if from_currency and to_currency and amount:
+            converted_amount = convert_currency(amount, from_currency, to_currency)
+            self.converted_amount_var.set(converted_amount)
+        else:
+            messagebox.showerror("Error", "Please fill in all fields.")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = CurrencyConverterApp(root)
+    root.mainloop()
